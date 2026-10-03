@@ -1,3 +1,4 @@
+import { MAX_QUESTIONS } from '../utils/sheetLayout';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   CheckCircle2,
@@ -103,7 +104,7 @@ export default function AnswerKeyEditor({
   // Allow user to enter exact number of questions
   const handleQuestionCountChange = (count) => {
     if (quiz.submissions?.length) { alert('Create a new quiz to change the sheet layout after saving grades.'); return; }
-    const num = Math.max(1, Math.min(100, parseInt(count, 10) || 1));
+    const num = Math.max(1, Math.min(MAX_QUESTIONS, parseInt(count, 10) || 1));
     const trimmedKey = {};
     for (let q = 1; q <= num; q++) {
       if (answerKey[q]) trimmedKey[q] = answerKey[q];
@@ -191,6 +192,7 @@ export default function AnswerKeyEditor({
               <button
                 type="button"
                 onClick={() => handleAdjustCount(-1)}
+                aria-label="Decrease question count" disabled={quiz.numQuestions<=1}
                 className="w-5 h-5 rounded hover:bg-slate-200 flex items-center justify-center font-bold text-slate-600"
               >
                 <Minus className="w-3 h-3" />
@@ -198,7 +200,8 @@ export default function AnswerKeyEditor({
               <input
                 type="number"
                 min="1"
-                max="100"
+                max={MAX_QUESTIONS}
+                aria-label="Number of questions"
                 value={quiz.numQuestions}
                 onChange={(e) => handleQuestionCountChange(e.target.value)}
                 className="w-12 bg-white text-slate-900 font-bold text-center rounded px-1 py-0.5 border border-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -206,6 +209,7 @@ export default function AnswerKeyEditor({
               <button
                 type="button"
                 onClick={() => handleAdjustCount(1)}
+                aria-label="Increase question count" disabled={quiz.numQuestions>=MAX_QUESTIONS}
                 className="w-5 h-5 rounded hover:bg-slate-200 flex items-center justify-center font-bold text-slate-600"
               >
                 <Plus className="w-3 h-3" />

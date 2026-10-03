@@ -1,7 +1,7 @@
 // Optical Mark Recognition (OMR) Computer Vision Engine
 // Client-side pixel analysis; photos never leave the device.
 
-import { getSheetLayout } from './sheetLayout.js';
+import { getSheetLayout, getLegacySheetLayout, MAX_QUESTIONS } from './sheetLayout.js';
 import { calculateGrade } from '../types/quizModel.js';
 
 // Compute the projective coefficients once for a batch of samples.
@@ -33,7 +33,7 @@ function layoutMatchesImage(imageData,width,height,corners,layout,quiz) {
     const k=(y*width+x)*4;
     return data[k]*.299+data[k+1]*.587+data[k+2]*.114<150;
   };
-  return Object.values(layout.questions).every(q=>quiz.options.every(opt=> {
+  return Object.values(layout.questions).filter(q=>q.number<=quiz.numQuestions).every(q=>quiz.options.every(opt=> {
     const c=q.options[opt];let hits=0;
     for(let j=0;j<24;j++) {
       const t=j*Math.PI/12;let hit=false;
@@ -138,7 +138,7 @@ export function detectBubbleLayout(imageData, width, height, corners, quiz, prev
   }
   const dark=(x,y)=>x>=0&&x<w&&y>=0&&y<h&&mask[y*w+x]>0;
   // Fast path is allowed only when every expected printed perimeter is actually present.
-  const standardMatches=Object.values(standard.questions).every(q=>quiz.options.every(opt=>{
+  const standardMatches=Object.values(standard.questions).filter(q=>q.number<=quiz.numQuestions).every(q=>quiz.options.every(opt=>{
     const c=q.options[opt],cx=c.u*w,cy=c.v*h,r=c.radius*w;let hits=0;
     for(let j=0;j<24;j++){const t=j*Math.PI/12;let hit=false;
       for(const f of [.8,.9,1,1.1,1.2])if(dark(Math.round(cx+Math.cos(t)*r*f),Math.round(cy+Math.sin(t)*r*f)))hit=true;
@@ -173,7 +173,7 @@ export function detectBubbleLayout(imageData, width, height, corners, quiz, prev
   }
   const unique=[];
   for(const c of circles.sort((a,b)=>b.r-a.r))if(!unique.some(p=>Math.hypot(p.x-c.x,p.y-c.y)<p.r*.6))unique.push(c);
-  const layout=getSheetLayout(quiz.numQuestions,quiz.options);
+  const layout=getLegacySheetLayout(quiz.numQuestions,quiz.options);
   let matched=0;
   for(let col=0;col<layout.numColumns;col++) {
     const left=layout.numColumns===1?0:(.03+col*.94/layout.numColumns)*w;
@@ -287,6 +287,7 @@ function sampleBubbleFill(data, width, height, centerX, centerY, radius, bgLumin
  * Analyzes an image canvas against the quiz answer key.
  */
 export function scanBubbleSheet(canvas, quiz, scanConfig = null) {
+  if(!Number.isInteger(quiz.numQuestions)||quiz.numQuestions<1||quiz.numQuestions>MAX_QUESTIONS)throw new Error(`Scanning supports 1–${MAX_QUESTIONS} questions. Create a new quiz; older saved grades remain in Gradebook.`);
   if (Array.from({length: quiz.numQuestions}, (_, i) => quiz.answerKey[i+1]).some(a => !quiz.options.includes(a))) throw new Error("Complete the answer key before scanning.");
   const width = canvas.width;
   const height = canvas.height;

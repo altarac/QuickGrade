@@ -1,3 +1,4 @@
+import { MAX_QUESTIONS } from '../utils/sheetLayout';
 import React, { useState } from 'react';
 import { X, PlusCircle, Minus, Plus } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
     e.preventDefault();
     if (!title.trim()) return;
 
-    const parsedCount = Math.max(1, Math.min(100, parseInt(numQuestions, 10) || 10));
+    const parsedCount = Math.max(1, Math.min(MAX_QUESTIONS, parseInt(numQuestions, 10) || 10));
     const options = optionCount === 5 ? ['A', 'B', 'C', 'D', 'E'] : ['A', 'B', 'C', 'D'];
 
     onCreateQuiz({
@@ -29,12 +30,12 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
   };
 
   const handleAdjustCount = (delta) => {
-    setNumQuestions(prev => Math.max(1, Math.min(100, (parseInt(prev, 10) || 10) + delta)));
+    setNumQuestions(prev => Math.max(1, Math.min(MAX_QUESTIONS, (parseInt(prev, 10) || 10) + delta)));
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 text-slate-800">
+    <div role="dialog" aria-modal="true" aria-labelledby="new-quiz-title" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-in fade-in zoom-in-95 text-slate-800">
 
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
@@ -43,12 +44,13 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
               <PlusCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Create New Quiz</h3>
-              <p className="text-xs text-slate-500">Configure quiz details and exact questions</p>
+              <h3 id="new-quiz-title" className="text-lg font-bold text-slate-900">Create New Quiz</h3>
+              <p className="text-xs text-slate-500">Choose 1–20 questions. Sheets always have 20 answer rows.</p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close new quiz"
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
@@ -89,15 +91,16 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                Exact Number of Questions *
+                Questions *
               </label>
-              <span className="text-xs text-slate-400 font-medium">1 to 100 questions</span>
+              <span className="text-xs text-slate-400 font-medium">1 to 20 questions</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleAdjustCount(-1)}
+                aria-label="Decrease question count" disabled={Number(numQuestions)<=1}
                 className="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition active:scale-95"
               >
                 <Minus className="w-4 h-4" />
@@ -106,7 +109,8 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
               <input
                 type="number"
                 min="1"
-                max="100"
+                max={MAX_QUESTIONS}
+                aria-label="Number of questions"
                 required
                 value={numQuestions}
                 onChange={(e) => setNumQuestions(e.target.value)}
@@ -116,6 +120,7 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
               <button
                 type="button"
                 onClick={() => handleAdjustCount(1)}
+                aria-label="Increase question count" disabled={Number(numQuestions)>=MAX_QUESTIONS}
                 className="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition active:scale-95"
               >
                 <Plus className="w-4 h-4" />
@@ -125,7 +130,7 @@ export default function NewQuizModal({ isOpen, onClose, onCreateQuiz }) {
             {/* Quick Presets */}
             <div className="flex items-center gap-1.5 mt-2">
               <span className="text-[11px] text-slate-400">Quick set:</span>
-              {[5, 10, 15, 20, 25, 30, 50].map(cnt => (
+              {[5, 10, 15, 20].map(cnt => (
                 <button
                   key={cnt}
                   type="button"

@@ -1,7 +1,7 @@
 // Bubble Sheet Canvas Generator
 // Generates high-resolution printable sheets and simulated test sheets with 100% coordinate fidelity.
 
-import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE } from './sheetLayout.js';
+import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE, MAX_QUESTIONS } from './sheetLayout.js';
 import { mapPoint } from './omrEngine.js';
 
 /**
@@ -9,6 +9,7 @@ import { mapPoint } from './omrEngine.js';
  * Uses exact fiducial mapping so drawn bubbles match OMR scanner sampling pixels 1:1.
  */
 export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
+  if(!Number.isInteger(quiz.numQuestions)||quiz.numQuestions<1||quiz.numQuestions>MAX_QUESTIONS)throw new Error(`Printable quizzes support 1–${MAX_QUESTIONS} questions.`);
   const width = canvas.width || 1200;
   const height = canvas.height || 1600;
   const ctx = canvas.getContext('2d');
@@ -67,7 +68,7 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
 
   ctx.fillStyle = '#64748b';
   ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillText(`OMR FORM • ${quiz.numQuestions} QUESTIONS • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
+  ctx.fillText(`OMR FORM • ${layout.numQuestions} ROWS • ANSWER 1–${quiz.numQuestions} • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
 
   // Instructions Box
   const instrPos = mapPoint(layout.header.instructions.u, layout.header.instructions.v, corners);
@@ -170,7 +171,7 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
   }
 
   // 5. Draw Question Rows & Bubbles (1:1 with OMR Engine mapping)
-  for (let q = 1; q <= quiz.numQuestions; q++) {
+  for (let q = 1; q <= layout.numQuestions; q++) {
     const qInfo = layout.questions[q];
     if (!qInfo) continue;
 

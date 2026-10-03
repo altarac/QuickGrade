@@ -14,7 +14,7 @@ const results=await page.evaluate(source=> {
   let seed=Number(source.match(/TEST_SEED=(\d+)/)?.[1]||1);Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
   const api=new Function(source+';return {drawBubbleSheetToCanvas,scanBubbleSheet,mapPoint,generateSimulatedTestSheet,detectCornerMarkers};')();
   const results=[];
-  for(const n of [1,5,10,25,50,100])for(const optionCount of [4,5]) {
+  for(const n of Array.from({length:20},(_,i)=>i+1))for(const optionCount of [4,5]) {
     const quiz={id:'test',title:'Test',numQuestions:n,options:'ABCDE'.slice(0,optionCount).split(''),answerKey:{},pointsPerQuestion:2};
     for(let q=1;q<=n;q++)quiz.answerKey[q]=quiz.options[(q-1)%optionCount];
     for(const target of [0,Math.round(n*.8),n]) {
@@ -39,9 +39,9 @@ const results=await page.evaluate(source=> {
       if(!rejected)throw new Error('Missing corner accepted');
     }
   }
-  const quiz={id:'photo',title:'Photo test',numQuestions:50,options:['A','B','C','D','E'],answerKey:{},pointsPerQuestion:1};
-  for(let q=1;q<=50;q++)quiz.answerKey[q]=quiz.options[(q-1)%5];
-  const {canvas}=api.generateSimulatedTestSheet(quiz,'Photo',40);
+  const quiz={id:'photo',title:'Photo test',numQuestions:20,options:['A','B','C','D','E'],answerKey:{},pointsPerQuestion:1};
+  for(let q=1;q<=20;q++)quiz.answerKey[q]=quiz.options[(q-1)%5];
+  const {canvas}=api.generateSimulatedTestSheet(quiz,'Photo',16);
   const src=canvas.getContext('2d').getImageData(0,0,1200,1600);
   const c={tl:{x:190,y:80},tr:{x:720,y:125},bl:{x:110,y:795},br:{x:820,y:740}};
   const dx1=c.tr.x-c.br.x,dx2=c.bl.x-c.br.x,dy1=c.tr.y-c.br.y,dy2=c.bl.y-c.br.y;
@@ -60,8 +60,8 @@ const results=await page.evaluate(source=> {
   }
   pc.putImageData(out,0,0);
   let photoScan;try{photoScan=api.scanBubbleSheet(photo,quiz);}catch(e){throw new Error(e.message+JSON.stringify(api.detectCornerMarkers(out,1000,900)));}
-  if(photoScan.score!==40)throw new Error('Perspective / shadow test expected 40, got '+photoScan.score);
-  results.push('Perspective distortion and uneven lighting: 40/50 correct');
+  if(photoScan.score!==16)throw new Error('Perspective / shadow test expected 16, got '+photoScan.score);
+  results.push('Perspective distortion and uneven lighting: 16/20 correct');
   const legacyQuiz={id:'legacy',title:'Older sheet',numQuestions:5,options:['A','B','C','D'],answerKey:{1:'A',2:'A',3:'A',4:'A',5:'A'},pointsPerQuestion:1};
   const legacy=document.createElement('canvas');legacy.width=1200;legacy.height=1600;
   api.drawBubbleSheetToCanvas(legacy,legacyQuiz);
@@ -79,7 +79,7 @@ const results=await page.evaluate(source=> {
   if(api.scanBubbleSheet(legacy,legacyQuiz,{previousLayout:legacyScan.layout}).score!==3)throw new Error('Validated legacy layout cache changed score');
   const current=api.generateSimulatedTestSheet(legacyQuiz,'New layout',5).canvas;
   const newScan=api.scanBubbleSheet(current,legacyQuiz,{previousLayout:legacyScan.layout});
-  if(newScan.score!==5||Math.abs(newScan.answers[1].options.A.pixelX-(.06+.88*.3675)*1200)>3)throw new Error('Old layout cache was reused on a different printed grid');
+  if(newScan.score!==5||Math.abs(newScan.answers[1].options.A.pixelX-(.06+.88*.195825)*1200)>3)throw new Error('Old layout cache was reused on a different printed grid');
   window.__legacySheet=legacy.toDataURL('image/png');
   results.push('Older five-question layout with letters: 3/5, all overlay centers within 3 pixels');
   const empty=document.createElement('canvas');empty.width=800;empty.height=1000;empty.getContext('2d').fillStyle='white';empty.getContext('2d').fillRect(0,0,800,1000);

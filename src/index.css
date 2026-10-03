@@ -74,6 +74,11 @@ h1,h2,h3,p { overflow-wrap: anywhere; }
   header nav button > span:not(:first-of-type) { display: none; }
   header nav button { padding-inline: 6px; }
 }
+@media (max-width: 360px) {
+  header nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  header nav button { min-width: 0; padding-inline: 3px; gap: 0; }
+  header nav button svg { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
