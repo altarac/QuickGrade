@@ -1,0 +1,18 @@
+import {chromium} from 'playwright';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true});const page=await browser.newPage();
+const quiz={id:'embed-test',title:'Embed camera test',numQuestions:5,options:['A','B','C','D'],pointsPerQuestion:1,answerKey:{1:'A',2:'B',3:'C',4:'D',5:'A'},submissions:[]};
+const html=(await readFile('QuickGrade.html','utf8')).replace('<head>',`<head><script>localStorage.setItem('quickgrade_quizzes_v2',${JSON.stringify(JSON.stringify([quiz]))});window.__mediaRequests=0;navigator.mediaDevices.getUserMedia=async()=>{window.__mediaRequests++;throw new DOMException('Blocked','NotAllowedError');};</script>`);
+await page.route('https://sites.test/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html><body><iframe title="Custom embed" src="https://quickgrade.test/app" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="width:100%;height:900px"></iframe></body></html>'}));
+await page.route('https://quickgrade.test/**',r=>r.fulfill({contentType:'text/html',body:html}));
+await page.goto('https://sites.test');const frame=page.frameLocator('iframe');
+await frame.getByRole('button',{name:'Scan',exact:true}).click();
+await frame.getByText('Running inside a website embed.',{exact:true}).waitFor();
+await frame.getByRole('button',{name:'Start Camera',exact:true}).click();
+await frame.getByText(/This website embed blocks live camera access/).first().waitFor();
+const child=page.frames().find(f=>f.url().startsWith('https://quickgrade.test'));
+assert.equal(await child.evaluate(()=>window.__mediaRequests),0);
+assert.equal(await frame.getByLabel('Take sheet photo with device camera').getAttribute('capture'),'environment');
+console.log('Cross-origin frame with no camera allowance: embed notice displayed, policy block identified before requesting media, photo option retained.');
+await browser.close();

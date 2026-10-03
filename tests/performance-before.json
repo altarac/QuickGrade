@@ -1,0 +1,20 @@
+[
+  {
+    "questions": 10,
+    "cornerMs": 2.899999976158142,
+    "layoutMs": 65.60000002384186,
+    "fullScanMs": 70.20000004768372
+  },
+  {
+    "questions": 50,
+    "cornerMs": 3.1999999284744263,
+    "layoutMs": 65.39999997615814,
+    "fullScanMs": 72
+  },
+  {
+    "questions": 100,
+    "cornerMs": 3.299999952316284,
+    "layoutMs": 66,
+    "fullScanMs": 72.60000002384186
+  }
+]
