@@ -6,7 +6,7 @@ const page=await browser.newPage({viewport:{width:1095,height:930}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.route('https://quickgrade.test/**',async r=>r.fulfill({contentType:'text/html',body:await readFile('index.html','utf8')}));
 await page.goto('https://quickgrade.test');
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 const quiz={id:'fixed',title:'Five-question quiz',numQuestions:5,options:['A','B','C','D'],pointsPerQuestion:2,answerKey:{1:'A',2:'B',3:'C',4:'D',5:'A'},submissions:[]};
 await page.evaluate(({source,quiz})=>{
  const api=new Function(source+';return {drawBubbleSheetToCanvas,scanBubbleSheet,getSheetLayout,mapPoint};')();

@@ -19,7 +19,7 @@ await page.getByRole('button',{name:'Scan',exact:true}).click();
 await page.getByRole('button',{name:'Lightning mode',exact:true}).click();
 await page.getByRole('button',{name:'Start Camera',exact:true}).click();
 await page.getByText(/Markers: 0\/4/).waitFor();
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 await page.evaluate(()=>{
  window.__scores=[];
  new MutationObserver(()=>{const h=document.querySelector('[data-testid="lightning-score"] h3');const at=document.querySelector('[data-testid="lightning-score"]').dataset.scoredAt;if(h&&window.__scores.at(-1)?.at!==at)window.__scores.push({text:h.textContent,at,time:performance.now()});}).observe(document.querySelector('[data-testid="lightning-score"]'),{subtree:true,childList:true,characterData:true,attributes:true});

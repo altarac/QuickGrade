@@ -20,8 +20,21 @@ export default function App() {
   const backupInput=useRef(null);
   const [storageWarning,setStorageWarning]=useState('');
   const [backupMessage,setBackupMessage]=useState('');
-  const [activeTab, setActiveTab] = useState('key'); // 'key' | 'scan' | 'print' | 'gradebook'
+  const [activeTab, setActiveTab] = useState(() => window.location.hash==='#scan'?'scan':'key'); // 'key' | 'scan' | 'print' | 'gradebook'
   const [isNewQuizOpen, setIsNewQuizOpen] = useState(false);
+
+  // The printed QR can open a fresh page or return to an already open app tab.
+  useEffect(()=>{
+    const followScanLink=()=>{if(window.location.hash==='#scan')setActiveTab('scan');};
+    window.addEventListener('hashchange',followScanLink);
+    return ()=>window.removeEventListener('hashchange',followScanLink);
+  },[]);
+  useEffect(()=>{
+    const hash=activeTab==='scan'?'#scan':window.location.hash==='#scan'?'':window.location.hash;
+    if(window.location.hash!==hash){
+      try{window.history.replaceState(null,'',window.location.pathname+window.location.search+hash);}catch{/* URL updates are optional in restricted embeds. */}
+    }
+  },[activeTab]);
 
   // Initial onboarding form state for when there are no quizzes
   const [onboardTitle, setOnboardTitle] = useState('');

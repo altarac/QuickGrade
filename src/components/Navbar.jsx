@@ -43,7 +43,7 @@ export default function Navbar({
               </div>
               <div className="hidden sm:block">
                 <span className="text-lg font-black tracking-tight text-slate-900 flex items-center gap-1.5">
-                  QuickGrade <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">OMR</span>
+                  QuickGrade
                 </span>
                 <p className="text-xs text-slate-500 font-medium -mt-0.5">Instant Bubble Sheet Auto-Grader</p>
               </div>

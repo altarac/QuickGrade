@@ -2,7 +2,7 @@ import {chromium} from 'playwright';
 import {readFile,writeFile} from 'node:fs/promises';
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 const results=await page.evaluate(source=>{
  const api=new Function(source+';return {generateSimulatedTestSheet,detectCornerMarkers,detectBubbleLayout,scanBubbleSheet};')();
  const results=[];

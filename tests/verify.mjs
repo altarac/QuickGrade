@@ -8,7 +8,7 @@ const requests=[];page.on('request',r=>requests.push(r.url()));
 await page.route('https://quickgrade.test/**',async route=>route.fulfill({contentType:'text/html',body:await readFile('index.html','utf8')}));
 await page.goto('https://quickgrade.test');
 await page.getByRole('heading',{name:'Welcome to QuickGrade'}).waitFor();
-const files=['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'];
+const files=['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'];
 const source=(await Promise.all(files.map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n')+'\n// TEST_SEED='+String(process.env.TEST_SEED||1)+'\n';
 const results=await page.evaluate(source=> {
   let seed=Number(source.match(/TEST_SEED=(\d+)/)?.[1]||1);Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
