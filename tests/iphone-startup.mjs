@@ -1,0 +1,42 @@
+import {chromium} from 'playwright';
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true});
+const html=await readFile('QuickGrade.html','utf8');
+const quiz={id:'iphone-test',title:'iPhone camera test',numQuestions:5,options:['A','B','C','D'],pointsPerQuestion:1,answerKey:{1:'A',2:'B',3:'C',4:'D',5:'A'},submissions:[]};
+async function create(protocol){
+ const page=await browser.newPage({viewport:{width:390,height:844}});
+ await page.addInitScript(()=>{
+  window.__mediaRequests=0;
+  const realPlay=HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play=function(){if(this.srcObject&&getComputedStyle(this).display==='none')throw new Error('Cannot play a hidden video');return realPlay.call(this);};
+  const c=document.createElement('canvas');c.width=640;c.height=480;
+  const paint=()=>{c.getContext('2d').fillRect(0,0,640,480);requestAnimationFrame(paint);};requestAnimationFrame(paint);
+  Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:async()=>{window.__mediaRequests++;window.__testStream=c.captureStream(12);return window.__testStream;},enumerateDevices:async()=>{throw new Error('Optional device listing failed');}}});
+ });
+ await page.route(`${protocol}://quickgrade.test/**`,r=>r.fulfill({contentType:'text/html',body:html}));
+ await page.goto(`${protocol}://quickgrade.test`);
+ await page.evaluate(q=>localStorage.setItem('quickgrade_quizzes_v2',JSON.stringify([q])),quiz);await page.reload();
+ await page.getByRole('button',{name:'Scan',exact:true}).click();return page;
+}
+const secure=await create('https');
+await secure.getByRole('button',{name:'Start Camera',exact:true}).click();
+await secure.getByText(/Markers: 0\/4/).waitFor();
+assert.equal(await secure.evaluate(()=>window.__testStream.getVideoTracks()[0].readyState),'live');
+assert.equal(await secure.locator('video').evaluate(v=>v.playsInline&&v.muted&&getComputedStyle(v).display!=='none'),true);
+assert.equal(await secure.getByRole('heading',{name:'Camera Inactive'}).count(),0);
+const insecure=await create('http');
+await insecure.getByRole('button',{name:'Start Camera',exact:true}).click();
+await insecure.getByText('This page is not a secure website, so live camera access is blocked. Open an HTTPS address in Safari, or use Take sheet photo.',{exact:true}).first().waitFor();
+assert.equal(await insecure.evaluate(()=>window.__mediaRequests),0);
+const input=insecure.getByLabel('Take sheet photo with device camera');
+assert.equal(await input.getAttribute('capture'),'environment');
+const chooserPromise=insecure.waitForEvent('filechooser');await insecure.getByRole('button',{name:'Take sheet photo',exact:true}).first().click();const chooser=await chooserPromise;
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const url=await insecure.evaluate(({source,quiz})=>new Function(source+';return generateSimulatedTestSheet(arguments[0],"Photo",4).canvas.toDataURL("image/png");')(quiz),{source,quiz});
+await chooser.setFiles({name:'iphone-sheet.png',mimeType:'image/png',buffer:Buffer.from(url.split(',')[1],'base64')});
+await insecure.getByRole('heading',{name:/Score: 4 \/ 5/}).waitFor();
+await insecure.screenshot({path:'tests/iphone-photo.png',fullPage:true});
+assert.equal(await insecure.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+console.log('Visible inline video starts; optional enumeration failure preserves the stream; HTTP gives an HTTPS explanation without requesting media; native-photo input opens and grades 4/5; mobile width fits.');
+await browser.close();
