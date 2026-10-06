@@ -316,7 +316,7 @@ export default function App() {
               <PrintableSheets
                 key={activeQuiz.id}
                 quiz={activeQuiz}
-                onNavigateToScan={() => setActiveTab('scan')}
+                onUpdateQuiz={handleUpdateQuiz}
               />
             )}
 

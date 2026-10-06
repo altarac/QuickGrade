@@ -1,7 +1,7 @@
 // Bubble Sheet Canvas Generator
 // Generates high-resolution printable sheets and simulated test sheets with 100% coordinate fidelity.
 
-import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE, MAX_QUESTIONS } from './sheetLayout.js';
+import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE, MAX_QUESTIONS, getAnswerRowInstructions } from './sheetLayout.js';
 import { drawSheetQr } from './sheetQr.js';
 import { mapPoint } from './omrEngine.js';
 
@@ -69,12 +69,12 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
 
   ctx.fillStyle = '#64748b';
   ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillText(`OMR FORM • ${layout.numQuestions} ROWS • ANSWER 1–${quiz.numQuestions} • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
+  ctx.fillText(`${layout.numQuestions} ROWS • ANSWER 1–${quiz.numQuestions} • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
 
   // Instructions Box
   const instrPos = mapPoint(layout.header.instructions.u, layout.header.instructions.v, corners);
   const instrW = markerSpanX * 0.31;
-  const instrH = 58;
+  const instrH = 82;
 
   ctx.strokeStyle = '#cbd5e1';
   ctx.lineWidth = 1;
@@ -87,8 +87,13 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
   ctx.fillText('INSTRUCTIONS:', instrPos.x + 8, instrPos.y + 8);
   ctx.font = '10px sans-serif';
   ctx.fillStyle = '#64748b';
-  ctx.fillText('• Use dark pen or pencil', instrPos.x + 8, instrPos.y + 24);
-  ctx.fillText('• Fill completely: ●', instrPos.x + 8, instrPos.y + 38);
+  const instructions=getAnswerRowInstructions(quiz.numQuestions);
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText(instructions.answer, instrPos.x + 8, instrPos.y + 24);
+  ctx.fillText(instructions.blank, instrPos.x + 8, instrPos.y + 38);
+  ctx.font = '10px sans-serif';
+  ctx.fillText('• Use dark pen or pencil', instrPos.x + 8, instrPos.y + 54);
+  ctx.fillText('• Fill one bubble completely per answer: ●', instrPos.x + 8, instrPos.y + 68);
 
   // Student Fields
   const namePos = mapPoint(layout.header.nameField.u, layout.header.nameField.v, corners);

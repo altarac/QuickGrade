@@ -113,3 +113,11 @@ export function getLegacySheetLayout(numQuestions = 10, options = ['A', 'B', 'C'
 export function getSheetLayout(_numQuestions = 20, options = ['A', 'B', 'C', 'D']) {
   return getLegacySheetLayout(SHEET_QUESTION_COUNT, options);
 }
+
+// The same row instructions appear beside the preview and on the printed form.
+export function getAnswerRowInstructions(numQuestions) {
+  return {
+    answer: numQuestions===1?'Answer question 1.':`Answer questions 1–${numQuestions}.`,
+    blank: numQuestions===20?'No questions to leave blank.':numQuestions===19?'Leave question 20 blank.':`Leave questions ${numQuestions+1}–20 blank.`
+  };
+}
