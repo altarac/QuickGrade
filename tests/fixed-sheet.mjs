@@ -51,9 +51,9 @@ await count.fill('21');await page.getByRole('button',{name:'Create Quiz',exact:t
 assert.equal(await page.getByRole('heading',{name:'Create New Quiz'}).isVisible(),true,'Creation accepted 21 questions');
 await count.fill('20');await page.getByRole('button',{name:'Create Quiz',exact:true}).click();
 assert.equal(await page.getByRole('spinbutton',{name:'Number of questions'}).inputValue(),'20');
-await page.getByRole('button',{name:'ABCD Pattern',exact:true}).click();
+for(let n=1;n<=20;n++)await page.getByRole('button',{name:`Question ${n}: ${'ABCD'[(n-1)%4]}`,exact:true}).click();
 await page.getByRole('button',{name:'Bubble Sheets',exact:true}).click();
-await page.getByLabel('20-row bubble sheet; only rows 1–20 are graded').waitFor();
+await page.getByLabel('20-row ABCD bubble sheet; only rows 1–20 are graded').waitFor();
 await page.screenshot({path:'tests/fixed-sheet-desktop.png',fullPage:true});
 await page.setViewportSize({width:390,height:844});
 await page.screenshot({path:'tests/new-quiz-mobile.png',fullPage:true});

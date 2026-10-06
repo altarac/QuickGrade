@@ -1,12 +1,8 @@
 import { MAX_QUESTIONS } from '../utils/sheetLayout';
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  CheckCircle2,
-  Sparkles,
-  Shuffle,
   Trash2,
   Camera,
-  Keyboard,
   Printer,
   Hash,
   Minus,
@@ -74,26 +70,6 @@ export default function AnswerKeyEditor({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeQuestion, answerKey, quiz]);
 
-  // Bulk actions
-  const handleRandomize = () => {
-    if (quiz.submissions?.length) { alert('Create a new quiz to change the key after saving grades.'); return; }
-    const newKey = {};
-    for (let q = 1; q <= quiz.numQuestions; q++) {
-      const randomOpt = quiz.options[Math.floor(Math.random() * quiz.options.length)];
-      newKey[q] = randomOpt;
-    }
-    onUpdateQuiz({ ...quiz, answerKey: newKey });
-  };
-
-  const handlePatternFill = () => {
-    if (quiz.submissions?.length) { alert('Create a new quiz to change the key after saving grades.'); return; }
-    const newKey = {};
-    for (let q = 1; q <= quiz.numQuestions; q++) {
-      newKey[q] = quiz.options[(q - 1) % quiz.options.length];
-    }
-    onUpdateQuiz({ ...quiz, answerKey: newKey });
-  };
-
   const handleClearAll = () => {
     if (quiz.submissions?.length) { alert('Create a new quiz to change the key after saving grades.'); return; }
     if (window.confirm('Clear all answers from this key?')) {
@@ -137,7 +113,7 @@ export default function AnswerKeyEditor({
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{quiz.title}</h1>
             <p className="text-sm text-slate-500 mt-1">
-              Tap or use your keyboard keys (<kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono text-indigo-700 border border-slate-200">A</kbd>, <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono text-indigo-700 border border-slate-200">B</kbd>, <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono text-indigo-700 border border-slate-200">C</kbd>, <kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono text-indigo-700 border border-slate-200">D</kbd>) to rapidly set the answer key.
+              Tap an answer or press {quiz.options.map((option,index)=>(<React.Fragment key={option}>{index>0?', ':''}<kbd className="px-1.5 py-0.5 bg-slate-100 rounded text-xs font-mono text-indigo-700 border border-slate-200">{option}</kbd></React.Fragment>))} to set the answer key.
             </p>
           </div>
 
@@ -184,7 +160,7 @@ export default function AnswerKeyEditor({
             </div>
           </div>
 
-          {/* Exact Question Count Selector & Preset Buttons */}
+          {/* Question count and key reset */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200 text-xs font-medium text-slate-700">
               <Hash className="w-3.5 h-3.5 text-slate-400" />
@@ -217,24 +193,6 @@ export default function AnswerKeyEditor({
             </div>
 
             <button
-              onClick={handlePatternFill}
-              title="Fill with ABCD repeating pattern"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition"
-            >
-              <Sparkles className="w-3 h-3 text-amber-500" />
-              <span>ABCD Pattern</span>
-            </button>
-
-            <button
-              onClick={handleRandomize}
-              title="Randomize answer key for test demo"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition"
-            >
-              <Shuffle className="w-3 h-3 text-indigo-600" />
-              <span>Randomize</span>
-            </button>
-
-            <button
               onClick={handleClearAll}
               title="Clear all answers"
               className="p-1.5 rounded-xl hover:bg-rose-50 text-rose-700 hover:text-rose-600 border border-slate-200 transition"
@@ -242,21 +200,6 @@ export default function AnswerKeyEditor({
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Keyboard Shortcut Helper Tooltip */}
-      <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl px-4 py-3 mb-6 flex items-center justify-between text-xs text-indigo-900">
-        <div className="flex items-center gap-2">
-          <Keyboard className="w-4 h-4 text-indigo-600 shrink-0" />
-          <span>
-            <strong>Pro Tip:</strong> Click any question row or simply press keys <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, or <strong>D</strong> on your keyboard to rapidly punch in answers!
-          </span>
-        </div>
-        <div className="hidden sm:flex items-center gap-1 font-mono text-[11px] text-indigo-600">
-          <span className="px-1.5 py-0.5 bg-white rounded border border-indigo-200 shadow-xs">↑</span>
-          <span className="px-1.5 py-0.5 bg-white rounded border border-indigo-200 shadow-xs">↓</span>
-          <span>to navigate</span>
         </div>
       </div>
 
