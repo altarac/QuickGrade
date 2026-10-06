@@ -21,7 +21,7 @@ await page.getByRole('button',{name:'Scan',exact:true}).click();
 await page.getByRole('button',{name:'Start Camera',exact:true}).click();
 await page.getByText(/Markers: 0\/4/).waitFor();
 await page.getByRole('button',{name:'Pause auto-capture',exact:true}).click();
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 await page.evaluate(({source,quiz})=> {
  const api=new Function(source+';return {generateSimulatedTestSheet};')();
  const {canvas}=api.generateSimulatedTestSheet(quiz,'Camera Test',8);

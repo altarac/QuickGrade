@@ -128,7 +128,7 @@ export default function PrintableSheets({
               Print Bubble Sheets for Students
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Optimized for high-speed camera scanning. The 4 solid black corner squares help the scanner align a clear, upright photo.
+              Every sheet has 20 answer rows. This quiz grades only rows 1–{quiz.numQuestions}.{quiz.numQuestions<20&&" Leave the remaining rows blank."} Keep all four corner markers visible when scanning.
             </p>
           </div>
 
@@ -201,11 +201,12 @@ export default function PrintableSheets({
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
+              aria-label={`20-row bubble sheet; only rows 1–${quiz.numQuestions} are graded`}
               className="w-full h-auto rounded-lg shadow-xs"
             />
 
             <div className="absolute top-3 right-3 no-print opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/80 text-white text-xs px-3 py-1.5 rounded-lg pointer-events-none">
-              Click any bubble to toggle mark
+              Click rows 1–{quiz.numQuestions} to toggle a mark
             </div>
           </div>
         </div>

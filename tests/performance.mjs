@@ -2,11 +2,11 @@ import {chromium} from 'playwright';
 import {readFile,writeFile} from 'node:fs/promises';
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 const results=await page.evaluate(source=>{
  const api=new Function(source+';return {generateSimulatedTestSheet,detectCornerMarkers,detectBubbleLayout,scanBubbleSheet};')();
  const results=[];
- for(const n of [10,50,100]){
+ for(const n of [5,10,20]){
   const quiz={id:'perf',title:'Benchmark',numQuestions:n,options:['A','B','C','D'],answerKey:Object.fromEntries(Array.from({length:n},(_,i)=>[i+1,'ABCD'[i%4]])),pointsPerQuestion:1};
   const {canvas}=api.generateSimulatedTestSheet(quiz,'Benchmark',n);const ctx=canvas.getContext('2d',{willReadFrequently:true});const data=ctx.getImageData(0,0,canvas.width,canvas.height);
   const samples={corners:[],layout:[],total:[]};

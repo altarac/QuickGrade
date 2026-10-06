@@ -1,7 +1,8 @@
 // Bubble Sheet Canvas Generator
 // Generates high-resolution printable sheets and simulated test sheets with 100% coordinate fidelity.
 
-import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE } from './sheetLayout.js';
+import { getSheetLayout, CORNER_MARKER_RELATIVE_SIZE, MAX_QUESTIONS } from './sheetLayout.js';
+import { drawSheetQr } from './sheetQr.js';
 import { mapPoint } from './omrEngine.js';
 
 /**
@@ -9,6 +10,7 @@ import { mapPoint } from './omrEngine.js';
  * Uses exact fiducial mapping so drawn bubbles match OMR scanner sampling pixels 1:1.
  */
 export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
+  if(!Number.isInteger(quiz.numQuestions)||quiz.numQuestions<1||quiz.numQuestions>MAX_QUESTIONS)throw new Error(`Printable quizzes support 1–${MAX_QUESTIONS} questions.`);
   const width = canvas.width || 1200;
   const height = canvas.height || 1600;
   const ctx = canvas.getContext('2d');
@@ -67,7 +69,7 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
 
   ctx.fillStyle = '#64748b';
   ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillText(`OMR FORM • ${quiz.numQuestions} QUESTIONS • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
+  ctx.fillText(`OMR FORM • ${layout.numQuestions} ROWS • ANSWER 1–${quiz.numQuestions} • CHOICES (${quiz.options.join('-')})`, titlePos.x, titlePos.y + 32);
 
   // Instructions Box
   const instrPos = mapPoint(layout.header.instructions.u, layout.header.instructions.v, corners);
@@ -170,7 +172,7 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
   }
 
   // 5. Draw Question Rows & Bubbles (1:1 with OMR Engine mapping)
-  for (let q = 1; q <= quiz.numQuestions; q++) {
+  for (let q = 1; q <= layout.numQuestions; q++) {
     const qInfo = layout.questions[q];
     if (!qInfo) continue;
 
@@ -223,12 +225,14 @@ export function drawBubbleSheetToCanvas(canvas, quiz, options = {}) {
     });
   }
 
-  // Footer / Form ID
-  ctx.fillStyle = '#94a3b8';
+  // A small footer QR opens scanning without changing the markers or answer grid.
+  const qrSize=Math.round(width*136/1200);
+  drawSheetQr(ctx,Math.round((width-qrSize)/2),Math.round(height*.9),qrSize);
+  ctx.fillStyle = '#475569';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('QuickGrade Standard OMR Bubble Sheet • Keep sheet flat and corners visible during scanning', width / 2, height - 12);
+  ctx.fillText('Scan to open QuickGrade', width / 2, height - 8);
 
   return canvas;
 }

@@ -32,7 +32,7 @@ assert.equal(await insecure.evaluate(()=>window.__mediaRequests),0);
 const input=insecure.getByLabel('Take sheet photo with device camera');
 assert.equal(await input.getAttribute('capture'),'environment');
 const chooserPromise=insecure.waitForEvent('filechooser');await insecure.getByRole('button',{name:'Take sheet photo',exact:true}).first().click();const chooser=await chooserPromise;
-const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
+const source=(await Promise.all(['src/types/quizModel.js','src/utils/sheetLayout.js','src/utils/omrEngine.js','src/utils/sheetQrData.js','src/utils/sheetQr.js','src/utils/sheetGenerator.js'].map(f=>readFile(f,'utf8')))).map(s=>s.replace(/^import .*;\n/gm,'').replace(/export /g,'')).join('\n');
 const url=await insecure.evaluate(({source,quiz})=>new Function(source+';return generateSimulatedTestSheet(arguments[0],"Photo",4).canvas.toDataURL("image/png");')(quiz),{source,quiz});
 await chooser.setFiles({name:'iphone-sheet.png',mimeType:'image/png',buffer:Buffer.from(url.split(',')[1],'base64')});
 await insecure.getByRole('heading',{name:/Score: 4 \/ 5/}).waitFor();

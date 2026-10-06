@@ -396,6 +396,7 @@ export default function CameraScanner({
       const layout=getSheetLayout(quiz.numQuestions,quiz.options),steps=[];
       for(let col=0;col<layout.numColumns;col++) {
         const first=col*layout.questionsPerColumn+1,last=Math.min(quiz.numQuestions,(col+1)*layout.questionsPerColumn);
+        if(first>quiz.numQuestions)continue;
         steps.push({col,kind:'first',label:`Question ${first}, option A`},{col,kind:'across',label:`Question ${first}, option ${quiz.options.at(-1)}`});
         if(last!==first)steps.push({col,kind:'last',label:`Question ${last}, option A`});
       }
@@ -414,6 +415,7 @@ export default function CameraScanner({
       const get=kind=>points[alignment.steps.findIndex(step=>step.col===col&&step.kind===kind)];
       const a=get('first'),b=get('across'),c=get('last')||a;
       const first=col*layout.questionsPerColumn+1,last=Math.min(quiz.numQuestions,(col+1)*layout.questionsPerColumn);
+      if(first>quiz.numQuestions)continue;
       if(b.u-a.u<.05||(last>first&&c.v-a.v<.02)){setScanError('Those points do not form a grid. Align the first row from left to right and the final row below it.');setAlignment(null);return;}
       for(let q=first;q<=last;q++) {
         const f=last===first?0:(q-first)/(last-first),info=layout.questions[q];
@@ -525,7 +527,7 @@ export default function CameraScanner({
       <div className="max-w-4xl w-full mx-auto px-4 py-2 text-sm text-slate-600">
         {isEmbedded&&<div className="mb-3 p-3 rounded-xl bg-amber-50 text-amber-900" role="note"><strong>Running inside a website embed.</strong> Live camera access depends on the enclosing website’s permissions. If Start Camera is blocked, open the independently hosted QuickGrade page directly. Take sheet photo may remain available here.</div>}
         {!lightningMode&&<><p>On iPhone, open an HTTPS address in Safari for live scanning. Take sheet photo opens the device camera for a one-photo scan.</p>
-        <p className="mt-1">Use a sheet printed from Bubble Sheets. Keep it upright, flat, evenly lit, with all four black corner markers visible. Photos stay on this device.</p></>}
+        <p className="mt-1">Use a sheet printed from Bubble Sheets. Only rows 1–{quiz.numQuestions} are graded. Keep it upright, flat, evenly lit, with all four black corner markers visible. Photos stay on this device.</p></>}
         {scanError && <p role="alert" className="mt-2 text-rose-700 font-semibold">{scanError}</p>}
         {!lightningMode&&<button className="mt-2 text-indigo-700 font-semibold underline" onClick={beginAlignment}>Align bubbles on last image</button>}
         {lightningMode&&<p className="mt-2 font-semibold text-indigo-800">Show all four markers on a printed QuickGrade sheet. Point at the next sheet after each score. Nothing is saved in Lightning mode.</p>}

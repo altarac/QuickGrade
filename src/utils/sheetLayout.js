@@ -5,13 +5,16 @@
 // Bottom-Left (BL) = (0.0, 1.0)
 // Bottom-Right (BR) = (1.0, 1.0)
 
+export const MAX_QUESTIONS = 20;
+export const SHEET_QUESTION_COUNT = 20;
+
 export const CORNER_MARKER_RELATIVE_SIZE = 0.055; // 5.5% of marker span
 
 /**
  * Returns the normalized layout geometry for a bubble sheet with given question count and options.
  * Everything is defined relative to the 4 corner fiducial markers.
  */
-export function getSheetLayout(numQuestions = 10, options = ['A', 'B', 'C', 'D']) {
+export function getLegacySheetLayout(numQuestions = 10, options = ['A', 'B', 'C', 'D']) {
   const isMultiColumn = numQuestions > 10;
   const numColumns = isMultiColumn ? (numQuestions > 25 ? 3 : 2) : 1;
   const questionsPerColumn = Math.ceil(numQuestions / numColumns);
@@ -104,4 +107,9 @@ export function getSheetLayout(numQuestions = 10, options = ['A', 'B', 'C', 'D']
     },
     questions
   };
+}
+
+// Every current form has the same 20 row positions, regardless of quiz length.
+export function getSheetLayout(_numQuestions = 20, options = ['A', 'B', 'C', 'D']) {
+  return getLegacySheetLayout(SHEET_QUESTION_COUNT, options);
 }

@@ -7,7 +7,8 @@
     "build": "vite build --configLoader runner && node scripts/pack.mjs",
     "preview": "vite preview",
     "test": "node scripts/test.mjs",
-    "benchmark": "node tests/performance.mjs"
+    "benchmark": "node tests/performance.mjs",
+    "qr": "node scripts/make-sheet-qr.mjs"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
@@ -18,7 +19,9 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
+    "jsqr": "^1.4.0",
     "playwright": "^1.63.0",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.2"
   }

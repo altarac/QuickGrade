@@ -50,6 +50,8 @@ export function calculateGrade(score, total) {
   return { percentage, letter, color };
 }
 
+// Older backups may contain up to 100 questions. Keep their history; App blocks new
+// scanning/editing above the current 20-question limit rather than deleting records.
 export function validateQuizzes(data) {
   if(!Array.isArray(data)||data.length>500) throw new Error('Backup must contain a quiz list.');
   const ids=new Set();

@@ -2,6 +2,10 @@
 
 A single HTML app for printing, scanning, and grading multiple-choice bubble sheets. `index.html` is the deployable app, with all JavaScript and styles embedded. `QuickGrade.html` is an identical downloadable copy. No server processes student photos.
 
+Use the visible **New Quiz** button beside the quiz selector to create a quiz with **1–20 questions**. Every printed sheet has **20 answer rows** in two columns (1–10 and 11–20), with four or five choices per row. The scanner reads and scores only rows 1 through the selected quiz’s question count; unused marks do not affect the grade. The sheet header tells students which rows to answer. A small footer QR opens `https://altarac.github.io/QuickGrade/#scan`: an existing quiz opens on the Scan tab, while a new device gets quiz setup. Camera access still starts from the teacher’s Start Camera button. The QR is included in preview, print, and downloaded PNGs; its matrix is bundled locally, with no QR service or runtime network request. Regenerate it with `npm run qr` if the hosted address changes.
+
+Older quizzes above 20 questions remain available for viewing/exporting their saved Gradebook records. They are not silently shortened; create a new quiz of up to 20 questions to scan or print. Older printed layouts for quizzes of up to 20 questions remain supported.
+
 ## Lightning scanning
 
 1. Create a quiz and complete its answer key.
@@ -21,7 +25,7 @@ Live camera access requires HTTPS (or localhost) and browser permission. On iPho
 - Check approximately every 200 ms, one frame at a time, and require two steady readings instead of three checks spaced 700 ms apart.
 - Normal auto-capture grades the exact stable frame; it does not detect and scan the page again.
 
-The same generated 1200 × 1600 sheets measured 70–73 ms per full scan before and 7–10 ms after on the development Mac's headless Chromium. The generated live camera fixture produced a first Lightning score in roughly half a second. These are local test measurements, not an iPhone speed guarantee; lighting, camera focus, sheet size, and device speed matter. Raw measurements are in `tests/performance-before.json` and `tests/performance-after.json`.
+The original scanner optimization benchmark, recorded before the fixed 20-row form was introduced, measured 70–73 ms per full scan before and 7–10 ms after on the development Mac's headless Chromium. The generated live camera fixture produced a first Lightning score in roughly half a second. These are local test measurements, not an iPhone speed guarantee; lighting, camera focus, sheet size, and device speed matter. Those historical measurements are in `tests/performance-before.json` and `tests/performance-after.json`. The current fixed-sheet benchmark is in `tests/performance-fixed-sheet.json`.
 
 ## Development
 
@@ -44,4 +48,4 @@ npm test
 npm run benchmark
 ```
 
-Tests run on isolated intercepted origins with generated sheets/camera streams. They cover 1–100 questions, four/five choices, weighted scores, perspective and shadows, older printed layouts, blank/double marks, missing markers, correction, persistence, printing, photo upload, CSV/backup, camera startup and embed policy, plus continuous Lightning scanning and same-answer re-arming. Camera startup fixtures emulate browser failure conditions; physical iPhone camera behavior still needs a device check.
+Tests run on isolated intercepted origins with generated sheets/camera streams. They cover every quiz length from 1–20 questions, fixed 20-row printing, marks in unused rows, creation/editing limits, preservation of older Gradebook records, four/five choices, weighted scores, perspective and shadows, older printed layouts, blank/double marks, missing markers, correction, persistence, printing, photo upload, CSV/backup, camera startup and embed policy, plus continuous Lightning scanning and same-answer re-arming. Camera startup fixtures emulate browser failure conditions; physical iPhone camera behavior still needs a device check.

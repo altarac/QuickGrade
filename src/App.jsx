@@ -1,3 +1,4 @@
+import { MAX_QUESTIONS } from './utils/sheetLayout';
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import AnswerKeyEditor from './components/AnswerKeyEditor';
@@ -19,8 +20,21 @@ export default function App() {
   const backupInput=useRef(null);
   const [storageWarning,setStorageWarning]=useState('');
   const [backupMessage,setBackupMessage]=useState('');
-  const [activeTab, setActiveTab] = useState('key'); // 'key' | 'scan' | 'print' | 'gradebook'
+  const [activeTab, setActiveTab] = useState(() => window.location.hash==='#scan'?'scan':'key'); // 'key' | 'scan' | 'print' | 'gradebook'
   const [isNewQuizOpen, setIsNewQuizOpen] = useState(false);
+
+  // The printed QR can open a fresh page or return to an already open app tab.
+  useEffect(()=>{
+    const followScanLink=()=>{if(window.location.hash==='#scan')setActiveTab('scan');};
+    window.addEventListener('hashchange',followScanLink);
+    return ()=>window.removeEventListener('hashchange',followScanLink);
+  },[]);
+  useEffect(()=>{
+    const hash=activeTab==='scan'?'#scan':window.location.hash==='#scan'?'':window.location.hash;
+    if(window.location.hash!==hash){
+      try{window.history.replaceState(null,'',window.location.pathname+window.location.search+hash);}catch{/* URL updates are optional in restricted embeds. */}
+    }
+  },[activeTab]);
 
   // Initial onboarding form state for when there are no quizzes
   const [onboardTitle, setOnboardTitle] = useState('');
@@ -50,6 +64,7 @@ export default function App() {
   const handleCreateQuiz = (newQuizData) => {
     const newQuiz = {
       ...newQuizData,
+      numQuestions:Math.max(1,Math.min(MAX_QUESTIONS,parseInt(newQuizData.numQuestions,10)||10)),
       id: `quiz-${Date.now()}`,
       createdAt: new Date().toISOString(),
       submissions: []
@@ -63,7 +78,7 @@ export default function App() {
     e.preventDefault();
     if (!onboardTitle.trim()) return;
 
-    const parsedCount = Math.max(1, Math.min(100, parseInt(onboardNumQuestions, 10) || 10));
+    const parsedCount = Math.max(1, Math.min(MAX_QUESTIONS, parseInt(onboardNumQuestions, 10) || 10));
     const options = onboardOptionCount === 5 ? ['A', 'B', 'C', 'D', 'E'] : ['A', 'B', 'C', 'D'];
 
     handleCreateQuiz({
@@ -135,7 +150,7 @@ export default function App() {
                   Welcome to QuickGrade
                 </h1>
                 <p className="text-sm text-slate-500 mt-2">
-                  Create your multiple-choice quiz with the exact number of questions you need.
+                  Create a quiz with 1–20 questions. Every printed sheet has 20 answer rows; only your quiz’s questions are graded.
                 </p>
               </div>
 
@@ -172,9 +187,9 @@ export default function App() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                      Exact Number of Questions *
+                      Questions *
                     </label>
-                    <span className="text-xs text-slate-400 font-medium">1 to 100 questions</span>
+                    <span className="text-xs text-slate-400 font-medium">1 to 20 questions</span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -189,7 +204,7 @@ export default function App() {
                     <input
                       type="number"
                       min="1"
-                      max="100"
+                      max={MAX_QUESTIONS}
                       required
                       value={onboardNumQuestions}
                       onChange={(e) => setOnboardNumQuestions(e.target.value)}
@@ -198,7 +213,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      onClick={() => setOnboardNumQuestions(prev => Math.min(100, (parseInt(prev, 10) || 10) + 1))}
+                      onClick={() => setOnboardNumQuestions(prev => Math.min(MAX_QUESTIONS, (parseInt(prev, 10) || 10) + 1))}
                       className="w-12 h-12 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition active:scale-95 text-lg"
                     >
                       <Plus className="w-5 h-5" />
@@ -208,7 +223,7 @@ export default function App() {
                   {/* Quick-pick chips */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                     <span className="text-xs text-slate-400">Quick select:</span>
-                    {[5, 10, 15, 20, 25, 30, 40, 50].map(cnt => (
+                    {[5, 10, 15, 20].map(cnt => (
                       <button
                         key={cnt}
                         type="button"
@@ -268,6 +283,12 @@ export default function App() {
                 </div>
               </form>
             </div>
+          </div>
+        ) : activeQuiz?.numQuestions>MAX_QUESTIONS&&activeTab!=='gradebook' ? (
+          <div className="max-w-xl mx-auto px-4 py-10">
+            <h1 className="text-2xl font-bold mb-3">Keep your older quiz records</h1>
+            <p className="text-slate-700 mb-5">This older quiz has {activeQuiz.numQuestions} questions. Its saved grades are kept in Gradebook. New quizzes and scanning support up to 20 questions.</p>
+            <div className="flex flex-wrap gap-3"><button onClick={()=>setActiveTab('gradebook')} className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-800 font-semibold">Open Gradebook</button><button onClick={()=>setIsNewQuizOpen(true)} className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold">New Quiz</button></div>
           </div>
         ) : activeQuiz ? (
           <>
